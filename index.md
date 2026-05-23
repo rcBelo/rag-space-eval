@@ -50,8 +50,11 @@ For each method, we retrieve the top-50 passages per query. To approximate groun
 We report Recall and NDCG across multiple top-k values, using two chunk sizes (2000 and 512 tokens) to study the effect of document granularity.
 
 <p align="center">
-  <img src="images/recall_ndcg.svg"/>
-  <img src="images/models.svg"/>
+  <img src="images/recall_ndcg.svg" width="800"/>
+</p>
+
+<p align="center">
+  <img src="images/models.svg" width="800"/>
 </p>
 
 Overall trends are consistent across both settings. BM25 remains a strong baseline in terms of recall and efficiency, while dense models like BGE-M3 and Qwen-based retrievers perform competitively in ranking quality (especially NDCG).
@@ -77,6 +80,10 @@ Each question–passage pair is scored using a 0–3 relevance scale:
 - 3 = highly relevant  
 
 We evaluate four Top-K settings (3, 5, 7, 10) under both chunk sizes.
+
+<p align="center">
+  <img src="images/rerank_vs_retriever.svg" width="800"/>
+</p>
 
 ---
 
