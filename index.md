@@ -118,6 +118,73 @@ In practice, this suggests:
 - Smaller, more focused chunks improve retrieval precision
 - Reranking amplifies this effect by filtering noise and boosting top-relevance results
 - The best setup is not just model-dependent, but also strongly influenced by chunk granularity
+
+
+
+
+
+## 6. Evaluating LLM Answer Accuracy on SpaceQA
+
+### 6.1 Results
+
+We evaluate answer accuracy using the ESA SpaceQA dataset, originally introduced by Garcia-Silva et al. and previously used to benchmark open-domain question answering in the space domain.
+
+The dataset contains 60 question–passage–answer triplets covering ESA mission documentation, including mission design, payloads, operations, and risk assessment. Although not fully aligned with our primary focus on space debris mitigation, it provides a strong benchmark for testing domain-specific reasoning in space operations.
+
+We test whether :contentReference[oaicite:0]{index=0} can produce correct answers under both clean and noisy retrieval settings.
+
+---
+
+### Setup
+
+For each question, we provide the correct supporting passage and add four random in-domain distractor passages (from the 2000-token pool), creating a high-noise retrieval setting.
+
+This increases the ratio of irrelevant to relevant context and stress-tests the model’s ability to extract useful information.
+
+We evaluate:
+
+- **Answer Accuracy** (exact match with ground truth)
+- **Answer Faithfulness**
+- **Answer Relevance**
+- **Noise Robustness**
+
+The last three metrics are computed using an ensemble of judge models (:contentReference[oaicite:1]{index=1} and :contentReference[oaicite:2]{index=2}), following standard RAG evaluation practices. All scores are on a 1–5 scale.
+
+---
+
+### Key Results
+
+The model performs strongly overall:
+
+- **Faithfulness:** 3.92  
+- **Relevance:** 4.02  
+- **Noise robustness:** 4.52  
+- **Answer accuracy:** 56 / 60  
+- **Accuracy without context:** 3 / 60  
+
+This shows a clear result: retrieval context is critical. Without RAG, performance collapses, while with context the model consistently produces correct answers.
+
+---
+
+### Interpretation
+
+The high faithfulness and relevance scores indicate that the model stays grounded in the provided passages and aligns well with the questions.
+
+The strong noise robustness score suggests that even with multiple irrelevant passages added, the model is still able to extract the correct information most of the time.
+
+However, errors still occur in cases where the correct answer is only implicitly stated. In these cases, the model tends to avoid guessing and instead defaults to “not found in context,” prioritizing safety over inference.
+
+This reduces hallucinations but limits performance when answers require bridging implicit relationships across the text.
+
+---
+
+### Takeaway
+
+Overall, the LLM performs well in noisy retrieval settings, but its main limitation is not noise—it is **implicit reasoning**. When answers are not explicitly stated, the model is conservative and often fails to infer them.
+
+Given the small dataset size (60 examples), these results should be interpreted as indicative rather than conclusive.
+
+
 ## Citation
 
 ```bibtex
