@@ -1,9 +1,3 @@
-<style>
-header {
-  display: none;
-}
-</style>
-
 <h1 align="center">
 A Systematic Evaluation of Retrieval-Augmented Generation and Language Models for Space Operations
 </h1>
