@@ -25,7 +25,7 @@ title: "A Systematic Evaluation of RAG and Language Models for Space Operations"
 
 Space operations generate vast, heterogeneous documentation that engineers and operators must navigate under time pressure. This paper systematically evaluates **Retrieval-Augmented Generation (RAG) pipelines** for the space domain, comparing retrieval strategies, embedding models, rerankers, and LLM answer quality to assess accuracy, relevance, and reliability.
 
-All models evaluated are **open-source** and deployable in private, secure environments — a critical requirement for space operations.
+![Figure](images/)
 
 ---
 
