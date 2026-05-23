@@ -1,19 +1,20 @@
----
-title: Syms RAG Space Eval
----
+<p align="center">
+  <b>A Systematic Evaluation of RAG and Language Models for Space Operations</b>
+</p>
 
-# A Systematic Evaluation of Retrieval-Augmented Generation and Language Models for Space Operations
+<p align="center">
+  Ruben Belo* · Marta Guimarães · Cláudia Soares
+</p>
 
-**Authors:** Your Name, Coauthors  
-**Affiliation:** Your Lab / University  
+<p align="center">
+  NOVA LINCS · Neuraspace · TUM
+</p>
 
----
-
-## Abstract
-
-Paste your paper abstract here.
-
----
+<p align="center">
+  <a href="paper.pdf">[Paper]</a>
+  <a href="https://github.com/yourrepo">[Code]</a>
+  <a href="#">[arXiv]</a>
+</p>
 
 ## Links
 
