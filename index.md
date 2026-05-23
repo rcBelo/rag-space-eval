@@ -25,12 +25,6 @@ Space operations generate vast, heterogeneous documentation that engineers and o
 
 ---
 
-
-
-<p align="center">
-  <img src="images/Ruben_cvpr_without_appendix-4_cropped.svg"/>
-</p>
-
 ## Evaluating Retrieval Models
 
 ### Validating Rerankers
@@ -38,6 +32,10 @@ Space operations generate vast, heterogeneous documentation that engineers and o
 We evaluate three rerankers—BGE-M3, GTE reranker-base, and Jina reranker-v2—to ensure robust and unbiased relevance scoring.
 
 Instead of relying on a single model, we use an ensemble of rerankers to reduce systematic bias and avoid overfitting to any specific embedding–reranker pairing. This is especially important since some rerankers are trained in ecosystems closely tied to specific embedding models.
+
+<p align="center">
+  <img src="images/rerank_vs_retriever.svg"/>
+</p>
 
 Across both Golden-Offset and Golden-Aligned subsets, all rerankers perform strongly, with consistently high F1 and accuracy scores (Table 1). This suggests that the relevance signal is stable and reliable, making these models suitable for downstream evaluation of retrieval quality.
 
@@ -49,7 +47,12 @@ We evaluate eight state-of-the-art embedding models from the MMTEB leaderboard, 
 
 For each method, we retrieve the top-50 passages per query. To approximate ground truth, we first retrieve the top-100 using BM25, then rerank them using the ensemble of rerankers to build a cleaner relevance signal.
 
-We report Recall, Precision, NDCG, and Kendall Tau across multiple top-k values, using two chunk sizes (2000 and 512 tokens) to study the effect of document granularity.
+We report Recall and NDCG across multiple top-k values, using two chunk sizes (2000 and 512 tokens) to study the effect of document granularity.
+
+<p align="center">
+  <img src="images/recall_ndcg.svg"/>
+  <img src="images/models.svg"/>
+</p>
 
 Overall trends are consistent across both settings. BM25 remains a strong baseline in terms of recall and efficiency, while dense models like BGE-M3 and Qwen-based retrievers perform competitively in ranking quality (especially NDCG).
 
@@ -183,6 +186,30 @@ This reduces hallucinations but limits performance when answers require bridging
 Overall, the LLM performs well in noisy retrieval settings, but its main limitation is not noise—it is **implicit reasoning**. When answers are not explicitly stated, the model is conservative and often fails to infer them.
 
 Given the small dataset size (60 examples), these results should be interpreted as indicative rather than conclusive.
+
+## Conclusion
+
+In this work, we systematically evaluate the main components of modern RAG pipelines in the space domain.
+
+We benchmark eight state-of-the-art embedding models alongside BM25, evaluate retrieval with and without reranking, and analyze the impact of chunk size on retrieval quality. Across experiments, reranking consistently improves relevance quality, while smaller 512-token chunks produce cleaner and more precise retrieval outputs.
+
+We also evaluate answer generation under noisy retrieval conditions using multiple complementary metrics, ranging from answer relevance and faithfulness to robustness against corrupted context. Additionally, we extend previous datasets with new relevant/irrelevant passage triplets to support retrieval evaluation.
+
+Overall, the results show that current retrieval and language models are increasingly capable of supporting controlled deployment in space operations workflows. Some retrievers and rerankers demonstrate particularly strong performance, while the LLM remains robust even under highly noisy retrieval settings.
+
+---
+
+#Limitations
+
+While the results are promising, several limitations should be considered.
+
+The SpaceQA dataset contains only 60 question–answer pairs, which limits large-scale statistical conclusions. The results should therefore be interpreted as indicative rather than definitive. Future work could explore synthetic or augmented datasets to expand evaluation coverage.
+
+Our negative sampling strategy may also produce passages that are relatively easy to distinguish from relevant ones. Constructing harder and more ambiguous negatives would provide a more challenging retrieval benchmark.
+
+In addition, reranker outputs are used as proxy ground truth. Although we mitigate bias through reranker ensembles, future evaluations could incorporate human annotations or stronger LLM-based judging strategies.
+
+Finally, answer quality metrics rely on judge models such as :contentReference[oaicite:0]{index=0} and :contentReference[oaicite:1]{index=1}. While these systems provide strong automated evaluation signals, alignment with human judgment remains an open challenge in RAG evaluation research.
 
 
 ## Citation
