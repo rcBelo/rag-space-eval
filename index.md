@@ -39,7 +39,6 @@ Instead of relying on a single model, we use an ensemble of rerankers to reduce 
 
 Across both Golden-Offset and Golden-Aligned subsets, all rerankers perform strongly, with consistently high F1 and accuracy scores (Table 1). This suggests that the relevance signal is stable and reliable, making these models suitable for downstream evaluation of retrieval quality.
 
----
 
 ### Embedding Model Evaluation
 
@@ -64,8 +63,6 @@ A key takeaway is that the best model depends on the pipeline setup:
 - **Retriever + reranker pipelines** benefit most from high-recall, low-latency models like BM25.
 - **Retriever-only pipelines** benefit more from strong ranking quality (NDCG), where dense models tend to perform better.
 
-  
----
 
 ### Impact of Reranking and Chunk Size Analysis
 
@@ -85,8 +82,6 @@ We evaluate four Top-K settings (3, 5, 7, 10) under both chunk sizes.
   <img src="images/rerank_vs_retriever.svg" width="800"/>
 </p>
 
----
-
 ### Key Findings
 
 **1. Reranking consistently improves relevance distribution**
@@ -103,13 +98,11 @@ A similar pattern appears in the 512-token setting:
 
 This shows reranking reliably filters out noise and promotes highly relevant passages.
 
----
 
 **2. Moderate relevance behaves differently under reranking**
 
 Retriever outputs tend to include slightly more mid-relevance (score 2) passages, especially at lower Top-K values. Reranking reduces these in favor of higher-confidence selections, suggesting it is most effective when pruning uncertain or borderline content.
 
----
 
 **3. Chunk size affects relevance distribution**
 
@@ -117,8 +110,6 @@ Retriever outputs tend to include slightly more mid-relevance (score 2) passages
 - 512-token chunks consistently yield more score-3 (high relevance) outputs.
 
 This supports the intuition that shorter chunks reduce noise and improve precision of top-ranked results.
-
----
 
 ### Overall Insight
 
@@ -130,20 +121,13 @@ In practice, this suggests:
 - The best setup is not just model-dependent, but also strongly influenced by chunk granularity
 
 
-
-
-
-## 6. Evaluating LLM Answer Accuracy on SpaceQA
-
-### 6.1 Results
+## Evaluating LLM Answer Accuracy on SpaceQA
 
 We evaluate answer accuracy using the ESA SpaceQA dataset, originally introduced by Garcia-Silva et al. and previously used to benchmark open-domain question answering in the space domain.
 
 The dataset contains 60 question–passage–answer triplets covering ESA mission documentation, including mission design, payloads, operations, and risk assessment. Although not fully aligned with our primary focus on space debris mitigation, it provides a strong benchmark for testing domain-specific reasoning in space operations.
 
 We test whether :contentReference[oaicite:0]{index=0} can produce correct answers under both clean and noisy retrieval settings.
-
----
 
 ### Setup
 
@@ -160,8 +144,6 @@ We evaluate:
 
 The last three metrics are computed using an ensemble of judge models (:contentReference[oaicite:1]{index=1} and :contentReference[oaicite:2]{index=2}), following standard RAG evaluation practices. All scores are on a 1–5 scale.
 
----
-
 ### Key Results
 
 The model performs strongly overall:
@@ -174,8 +156,6 @@ The model performs strongly overall:
 
 This shows a clear result: retrieval context is critical. Without RAG, performance collapses, while with context the model consistently produces correct answers.
 
----
-
 ### Interpretation
 
 The high faithfulness and relevance scores indicate that the model stays grounded in the provided passages and aligns well with the questions.
@@ -186,13 +166,12 @@ However, errors still occur in cases where the correct answer is only implicitly
 
 This reduces hallucinations but limits performance when answers require bridging implicit relationships across the text.
 
----
-
 ### Takeaway
 
 Overall, the LLM performs well in noisy retrieval settings, but its main limitation is not noise—it is **implicit reasoning**. When answers are not explicitly stated, the model is conservative and often fails to infer them.
 
 Given the small dataset size (60 examples), these results should be interpreted as indicative rather than conclusive.
+
 
 ## Conclusion
 
@@ -204,9 +183,7 @@ We also evaluate answer generation under noisy retrieval conditions using multip
 
 Overall, the results show that current retrieval and language models are increasingly capable of supporting controlled deployment in space operations workflows. Some retrievers and rerankers demonstrate particularly strong performance, while the LLM remains robust even under highly noisy retrieval settings.
 
----
-
-#Limitations
+## Limitations
 
 While the results are promising, several limitations should be considered.
 
