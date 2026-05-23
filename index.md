@@ -31,65 +31,93 @@ Space operations generate vast, heterogeneous documentation that engineers and o
   <img src="images/Ruben_cvpr_without_appendix-4_cropped.svg"/>
 </p>
 
-## Method
+## Evaluating Retrieval Models
 
-A standard RAG pipeline consists of two main stages: a **retriever**, which selects relevant passages from a document corpus, and a **generator** (LLM), which produces an answer conditioned on the retrieved context.
+### Validating Rerankers
 
-![RAG Pipeline](assets/pipeline.png)
+We evaluate three rerankers—BGE-M3, GTE reranker-base, and Jina reranker-v2—to ensure robust and unbiased relevance scoring.
 
-We evaluate the following components:
+Instead of relying on a single model, we use an ensemble of rerankers to reduce systematic bias and avoid overfitting to any specific embedding–reranker pairing. This is especially important since some rerankers are trained in ecosystems closely tied to specific embedding models.
 
-- **Chunking strategies** — 512-token vs. 2,000-token passage sizes
-- **Retrievers** — BM25 and 8 state-of-the-art embedding models from the [MMTEB leaderboard](https://huggingface.co/spaces/mteb/leaderboard)
-- **Rerankers** — BGE-M3, GTE-reranker-base, Jina-reranker-v2 (used as pseudo ground truth)
-- **Generator** — Llama 3 8B evaluated on the ESA SpaceQA dataset
+Across both Golden-Offset and Golden-Aligned subsets, all rerankers perform strongly, with consistently high F1 and accuracy scores (Table 1). This suggests that the relevance signal is stable and reliable, making these models suitable for downstream evaluation of retrieval quality.
 
 ---
 
-## Results
+### Embedding Model Evaluation
 
-### Retrieval
+We evaluate eight state-of-the-art embedding models from the MMTEB leaderboard, alongside BM25 as a classical sparse baseline.
 
-Reranking **consistently reduces irrelevant passages** and increases the proportion of highly relevant ones across all Top-K settings and chunk sizes. Using 512-token chunks with reranking yields the best results.
+For each method, we retrieve the top-50 passages per query. To approximate ground truth, we first retrieve the top-100 using BM25, then rerank them using the ensemble of rerankers to build a cleaner relevance signal.
 
-| Setting | Highly Relevant (Retriever) | Highly Relevant (Reranker) |
-|---|---|---|
-| 2,000-token chunks, Top-3 | 39.66% | 44.76% |
-| 512-token chunks, Top-3 | 42.54% | 48.37% |
+We report Recall, Precision, NDCG, and Kendall Tau across multiple top-k values, using two chunk sizes (2000 and 512 tokens) to study the effect of document granularity.
 
-**Model selection guidance:**
-- *With a reranker* → prioritise high-recall retrievers (e.g. BM25); the reranker handles relevance refinement.
-- *Without a reranker* → prioritise NDCG; passage ranking quality matters more (e.g. BGE-M3, Qwen2).
+Overall trends are consistent across both settings. BM25 remains a strong baseline in terms of recall and efficiency, while dense models like BGE-M3 and Qwen-based retrievers perform competitively in ranking quality (especially NDCG).
 
-### Answer Quality
+A key takeaway is that the best model depends on the pipeline setup:
 
-Llama 3 8B was evaluated on the ESA SpaceQA dataset (60 Q&A pairs) with 1 relevant passage + 4 noise passages per question.
+- **Retriever + reranker pipelines** benefit most from high-recall, low-latency models like BM25.
+- **Retriever-only pipelines** benefit more from strong ranking quality (NDCG), where dense models tend to perform better.
 
-| Metric | Score |
-|---|---|
-| Answer Faithfulness | 3.92 / 5 |
-| Answer Relevance | 4.02 / 5 |
-| Noise Robustness | 4.52 / 5 |
-| Answer Accuracy (with RAG) | 56 / 60 |
-| Answer Accuracy (without RAG) | 3 / 60 |
+  
+---
 
-RAG improves answer accuracy from **3/60 to 56/60**, demonstrating the critical role of retrieved context.
+### Impact of Reranking and Chunk Size Analysis
+
+Previous work evaluates passage relevance using chunks up to 2000 tokens, often relying on LLM-based judges such as :contentReference[oaicite:1]{index=1} 3.3 70B. This follows established evaluation frameworks like RAGAS and recent agentic retrieval approaches where LLMs act as evaluators or “judges”.
+
+We extend this setup by also evaluating 512-token chunks to understand whether reranking improves retrieval quality across different passage granularities.
+
+Each question–passage pair is scored using a 0–3 relevance scale:
+- 0 = completely irrelevant  
+- 1 = slightly relevant  
+- 2 = moderately relevant  
+- 3 = highly relevant  
+
+We evaluate four Top-K settings (3, 5, 7, 10) under both chunk sizes.
 
 ---
 
-## Failure Analysis
+### Key Findings
 
-The 4 incorrect answers share common patterns:
+**1. Reranking consistently improves relevance distribution**
 
-- **Implicit entity linking** — relevant information is present but not explicitly tied to the queried entity.
-- **Missing chunk content** — critical details fall outside the retrieved passage.
-- **Attention bias** — the model focuses on the first entities mentioned and disregards later ones.
-- **Conservative generation** — the model avoids speculation, defaulting to "not in context" to reduce hallucination risk.
+Across all Top-K settings and chunk sizes, reranking reduces low-relevance passages (scores 0 and 1) and increases highly relevant ones (score 3).
 
-These failures point to retrieval design as the key bottleneck: richer metadata (mission name, type, equipment) and better chunking strategies can address most cases.
+For example, at Top-3 (2000-token setting):
+- Score 0 drops from 2.12% → 1.29%
+- Score 3 increases from 39.66% → 44.76%
+
+A similar pattern appears in the 512-token setting:
+- Score 0 drops from 1.48% → 0.73%
+- Score 3 increases from 42.54% → 48.37%
+
+This shows reranking reliably filters out noise and promotes highly relevant passages.
 
 ---
 
+**2. Moderate relevance behaves differently under reranking**
+
+Retriever outputs tend to include slightly more mid-relevance (score 2) passages, especially at lower Top-K values. Reranking reduces these in favor of higher-confidence selections, suggesting it is most effective when pruning uncertain or borderline content.
+
+---
+
+**3. Chunk size affects relevance distribution**
+
+- 2000-token chunks tend to produce slightly higher proportions of score-2 passages.
+- 512-token chunks consistently yield more score-3 (high relevance) outputs.
+
+This supports the intuition that shorter chunks reduce noise and improve precision of top-ranked results.
+
+---
+
+### Overall Insight
+
+The combination of reranking + 512-token chunking produces the most consistent improvement in retrieval quality.
+
+In practice, this suggests:
+- Smaller, more focused chunks improve retrieval precision
+- Reranking amplifies this effect by filtering noise and boosting top-relevance results
+- The best setup is not just model-dependent, but also strongly influenced by chunk granularity
 ## Citation
 
 ```bibtex
