@@ -1,11 +1,7 @@
----
-layout: default
-title: "A Systematic Evaluation of RAG and Language Models for Space Operations"
----
 
-<p align="center">
-  <b>#A Systematic Evaluation of Retrieval-Augmented Generation and Language Models for Space Operations</b>
-</p>
+<h1 align="center">
+A Systematic Evaluation of Retrieval-Augmented Generation and Language Models for Space Operations
+</h1>
 
 <p align="center">
   Ruben Belo* · Marta Guimarães · Cláudia Soares
@@ -28,6 +24,12 @@ Space operations generate vast, heterogeneous documentation that engineers and o
 ![Figure](images/motivation.png)
 
 ---
+
+
+
+<p align="center">
+  <img src="images/Ruben_cvpr_without_appendix-4_cropped.svg"/>
+</p>
 
 ## Method
 
